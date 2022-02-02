@@ -1,0 +1,27 @@
+#logging.level.org.springframework.cloud.gateway=TRACE
+#management.endpoints.web.exposure.include=*
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+
+spring:
+  cloud:
+    gateway:
+      routes:
+
+        - id: route1
+          uri: http://localhost:8080/
+          predicates:
+            - Path=/get/{id}
+            - Method=PUT
+          filters:
+            - RedirectTo=302, http://httpbin.org/get
+
+        - id: route2
+          uri: http://localhost:8080/
+          predicates:
+            - Path=/get/**
+          filters:
+            - RedirectTo=302, http://httpbin.org/get
+
