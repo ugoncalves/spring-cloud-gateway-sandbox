@@ -23,10 +23,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter</artifactId>
             <version>3.1.0</version>
@@ -41,6 +37,7 @@
             <version>3.1.0</version>
         </dependency>
 
+        <!-- container test -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -57,7 +54,39 @@
             <version>5.11.2</version>
         </dependency>
 
-
+        <!-- mockserver test -->
+<!--        <dependency>-->
+<!--            <groupId>org.mock-server</groupId>-->
+<!--            <artifactId>mockserver-client-java</artifactId>-->
+<!--            <version>5.11.2</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.mock-server</groupId>-->
+<!--            <artifactId>mockserver-core</artifactId>-->
+<!--            <version>5.11.2</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.mock-server</groupId>-->
+<!--            <artifactId>mockserver-integration-testing</artifactId>-->
+<!--            <version>5.11.2</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.mock-server</groupId>-->
+<!--            <artifactId>mockserver-testing</artifactId>-->
+<!--            <version>5.11.2</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver-netty</artifactId>
+            <version>5.11.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver-junit-jupiter</artifactId>
+            <version>5.11.2</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

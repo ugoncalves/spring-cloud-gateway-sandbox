@@ -1,6 +1,9 @@
 #logging.level.org.springframework.cloud.gateway=TRACE
 #management.endpoints.web.exposure.include=*
 
+resources:
+  tenant: ${TENANT}
+
 logging:
   level:
     org.springframework.cloud.gateway: TRACE
@@ -11,17 +14,17 @@ spring:
       routes:
 
         - id: route1
-          uri: http://localhost:8080/
+          uri: ${resources.tenant}
           predicates:
-            - Path=/get/{id}
-            - Method=PUT
+            - Path=/sso2/api/users/**
+            - Method=GET
           filters:
-            - RedirectTo=302, http://httpbin.org/get
+            - RewritePath=/sso2/(?<segment>.*), /$\{segment}
 
         - id: route2
-          uri: http://localhost:8080/
+          uri: ${resources.tenant}
           predicates:
-            - Path=/get/**
+            - Path=/get/{id}
+            - Method=GET
           filters:
             - RedirectTo=302, http://httpbin.org/get
-
