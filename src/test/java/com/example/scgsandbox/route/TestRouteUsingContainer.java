@@ -1,53 +1,87 @@
 package com.example.scgsandbox.route;
 
-import org.junit.After;
-import org.junit.jupiter.api.Test;
-import org.mockserver.integration.ClientAndServer;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.testcontainers.containers.MockServerContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import java.util.stream.Stream;
+
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
-//@Testcontainers
 @SpringBootTest(webEnvironment = RANDOM_PORT)
+@Testcontainers
 public class TestRouteUsingContainer {
 
-//    @Container
-//    private final GenericContainer<?> topLevelContainer = new GenericContainer<>(
-//            DockerImageName.parse("jamesdbloom/mockserver"));
+    @Container
+    static MockServerContainer mockServer = new MockServerContainer(
+            DockerImageName.parse("jamesdbloom/mockserver:latest"));
 
-//    private final GenericContainer<?> topLevelContainer = new GenericContainer(
-//        new ImageFromDockerfile().withDockerfileFromBuilder(builder ->
-//            builder.from("alpine:3.14").run("apk add --update nginx").cmd("nginx", "-g", "daemon off;").build()))
-//            .withExposedPorts(80);
-
-    static ClientAndServer mockServer;
+    static MockServerClient mockServerClient;
+    WebTestClient gateway;
+    @LocalServerPort int gatewayPort;
 
     @DynamicPropertySource
+
     static void configure(DynamicPropertyRegistry registry) {
-
-        mockServer = startClientAndServer(1080);
-
-        registry.add("TENANT", ()->"http://localhost:1080" ); //mockServer.getHost()+":"+mockServer.getServerPort());
-
+        registry.add("TENANT", () -> "http://"+mockServer.getHost()+":"+mockServer.getServerPort());
     }
 
-    @After
-    public void stopMockServer() {
-        mockServer.stop();
+    private static void configureMockServerClient(HttpMethod method, String path) {
+        mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort());
+        mockServerClient.when(
+                        HttpRequest.request()
+                                .withMethod(method.name())
+                                .withPath(path)
+                )
+                .respond(r -> {
+                    return HttpResponse.response()
+                            .withBody("Hello from mockServer")
+                            .withStatusCode(200);
+                });
+    }
+
+    @BeforeEach
+    void setUp() {
+        gateway = WebTestClient.bindToServer().baseUrl("http://localhost:" + gatewayPort).build();
+    }
+
+    private static Stream<Arguments> provideData() {
+        return Stream.of(
+                //Arguments.of(HttpMethod.GET, "/sso2/api/users/", 200, "/api/users/"),
+                //Arguments.of(HttpMethod.GET, "/sso2/api/users/", 200, "/api/users/"),
+                Arguments.of(HttpMethod.GET, "/sso2/api/users/", 200, "/api/users/")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideData")
+    void test(HttpMethod method, String uri, int expectedStatus, String expectedPath) {
+
+        configureMockServerClient(method, expectedPath);
+
+        WebTestClient.RequestBodySpec webTestClient = gateway.method(method).uri(uri);
+
+        webTestClient
+                .exchange()
+                .expectStatus()
+                .isEqualTo(expectedStatus)
+                .expectBody(String.class)
+                .isEqualTo("Hello from mockServer");
     }
 
 
-
-    @Test
-    void test() {
-
-
-        assertTrue(true);
-        //assertTrue(topLevelContainer.isRunning());
-
-    }
 }
